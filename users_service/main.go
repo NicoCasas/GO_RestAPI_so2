@@ -23,6 +23,7 @@ func main() {
 	r.GET("/users/ping", controller.Ping)
 	r.POST("/users/login", controller.Login)
 	r.GET("/users/validated_ping", controller.ValidatedPing)
+	r.GET("/users/listall", controller.ListAll)
 
 	// Inicia la escucha
 	r.Run()

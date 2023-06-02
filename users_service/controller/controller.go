@@ -38,6 +38,23 @@ func ValidatedPing(ctx *gin.Context) {
 
 }
 
+func ListAll(ctx *gin.Context) {
+	stringToken := ctx.GetHeader("Api-Token")
+
+	if err := validateToken(stringToken); err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "No autorizado",
+		})
+		return
+	}
+
+	OS_userlist := modelService.GetOSUsers()
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": OS_userlist,
+	})
+}
+
 func validateToken(tokenString string) error {
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

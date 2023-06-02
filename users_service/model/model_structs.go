@@ -5,3 +5,8 @@ type User struct {
 	Password string `json:"password" binding:"required"`
 	Token    string `json:"token"`
 }
+
+type OSUser struct {
+	UserID   int    `json:"user_id"`
+	Username string `json:"username"`
+}
