@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ICOMP-UNC/2023---soii---laboratorio-6-NicoCasas/users_service/model"
@@ -23,7 +24,7 @@ func Ping(ctx *gin.Context) {
 }
 
 func ValidatedPing(ctx *gin.Context) {
-	stringToken := ctx.GetHeader("Api-Token")
+	stringToken := getTokenFromRequest(ctx)
 
 	if err := validateToken(stringToken); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -38,8 +39,20 @@ func ValidatedPing(ctx *gin.Context) {
 
 }
 
+/**
+*
+ */
+func getTokenFromRequest(ctx *gin.Context) string {
+	authHeader := strings.Split(ctx.GetHeader("Authorization"), " ")
+	if len(authHeader) < 2 || authHeader[0] != "Bearer" {
+		return ""
+	}
+	return authHeader[1]
+
+}
+
 func ListAll(ctx *gin.Context) {
-	stringToken := ctx.GetHeader("Api-Token")
+	stringToken := getTokenFromRequest(ctx)
 
 	if err := validateToken(stringToken); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -109,7 +122,7 @@ func Login(ctx *gin.Context) {
 	// Creamos el token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user": queryUser.Username,
-		"exp":  time.Now().Add(time.Hour * 24).Unix(),
+		"exp":  time.Now().Add(time.Hour * 1).Unix(),
 	})
 
 	// Sign and get the complete encoded token as a string using the secret

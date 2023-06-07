@@ -63,3 +63,38 @@ func GetOSUsers() []model.OSUser {
 	return users
 
 }
+
+// func CreateOSUser(user model.User) error {
+
+// 	if osUserExists(user.Username) {
+// 		return model.ErrOSUserAlreadyExists
+// 	}
+
+// 	cmdCreateUser := exec.Command("adduser", "-m", user.Username) // Chequear que esto ande
+// 	cmdPassWd := exec.Command("passwd", user.Username)            // Same
+
+// 	cmdPassWd.Stdin = strings.NewReader(user.Password)
+
+// 	err := cmdCreateUser.Run()
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	err = cmdPassWd.Run()
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+
+// }
+
+// func osUserExists(username string) bool {
+// 	OSUsers := GetOSUsers()
+// 	for _, user := range OSUsers {
+// 		if username == user.Username {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
