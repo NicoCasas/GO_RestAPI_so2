@@ -25,10 +25,11 @@ func main() {
 	r := gin.Default()
 
 	// Declaramos los endpoints
-	r.GET("/users/ping", controller.Ping)
-	r.POST("/users/login", controller.Login)
-	r.GET("/users/validated_ping", controller.ValidatedPing)
-	r.GET("/users/listall", controller.ListAll)
+	//r.GET("/api/users/ping", controller.Ping)
+	r.POST("/api/users/login", controller.Login)
+	//r.GET("/api/users/validated_ping", controller.ValidatedPing)
+	r.GET("/api/users/listall", controller.ListAll)
+	r.POST("/api/users/createuser", controller.Create_user)
 
 	// Inicia la escucha
 	r.Run()

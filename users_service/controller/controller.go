@@ -39,6 +39,48 @@ func ValidatedPing(ctx *gin.Context) {
 
 }
 
+func Create_user(ctx *gin.Context) {
+	var code int
+	var info string
+	var info_key string
+
+	stringToken := getTokenFromRequest(ctx)
+
+	if err := validateToken(stringToken); err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "No autorizado",
+		})
+		return
+	}
+
+	var user model.User
+	if err := ctx.Bind(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Credenciales incompletas",
+		})
+		return
+	}
+
+	err := modelService.CreateOSUser(user)
+	switch err {
+	case nil:
+		code = http.StatusOK
+		info = "Usuario creado exitosamente"
+		info_key = "message"
+	case model.ErrOSUserAlreadyExists:
+		code = http.StatusBadRequest
+		info_key = "error"
+		info = model.ErrOSUserAlreadyExists.Error()
+	default:
+		code = http.StatusBadRequest
+		info_key = "error"
+		info = "No se pudo completar la solicitud"
+	}
+
+	ctx.JSON(code, gin.H{info_key: info})
+
+}
+
 /**
 *
  */

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -64,37 +65,40 @@ func GetOSUsers() []model.OSUser {
 
 }
 
-// func CreateOSUser(user model.User) error {
+func CreateOSUser(user model.User) error {
 
-// 	if osUserExists(user.Username) {
-// 		return model.ErrOSUserAlreadyExists
-// 	}
+	if osUserExists(user.Username) {
+		return model.ErrOSUserAlreadyExists
+	}
 
-// 	cmdCreateUser := exec.Command("adduser", "-m", user.Username) // Chequear que esto ande
-// 	cmdPassWd := exec.Command("passwd", user.Username)            // Same
+	cmdCreateUser := exec.Command("sudo", "useradd", user.Username) // Sacar el sudo
+	cmdPassWd := exec.Command("sudo", "passwd", user.Username)      // Same
 
-// 	cmdPassWd.Stdin = strings.NewReader(user.Password)
+	var pass []string = []string{user.Password, user.Password}
+	cmdPassWd.Stdin = strings.NewReader(strings.Join(pass, "\n"))
 
-// 	err := cmdCreateUser.Run()
-// 	if err != nil {
-// 		return err
-// 	}
+	err := cmdCreateUser.Run()
+	if err != nil {
+		fmt.Println(err.Error(), ": No se pudo crear el usuario")
+		return err
+	}
 
-// 	err = cmdPassWd.Run()
-// 	if err != nil {
-// 		return err
-// 	}
+	err = cmdPassWd.Run()
+	if err != nil {
+		fmt.Println(err.Error(), ": No se pudo crear la contraseña")
+		return err
+	}
 
-// 	return nil
+	return nil
 
-// }
+}
 
-// func osUserExists(username string) bool {
-// 	OSUsers := GetOSUsers()
-// 	for _, user := range OSUsers {
-// 		if username == user.Username {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
+func osUserExists(username string) bool {
+	OSUsers := GetOSUsers()
+	for _, user := range OSUsers {
+		if username == user.Username {
+			return true
+		}
+	}
+	return false
+}
