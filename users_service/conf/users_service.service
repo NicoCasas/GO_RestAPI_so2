@@ -1,0 +1,9 @@
+[Unit]
+Description=Servicio de Usuarios
+After=network.target
+
+[Service]
+WorkingDirectory=/home/nico/Facultad/SO2/2023/tp6/2023---soii---laboratorio-6-NicoCasas/users_service/
+ExecStart=/home/nico/Facultad/SO2/2023/tp6/2023---soii---laboratorio-6-NicoCasas/users_service/user_service
+User=sistemas_operativos
+Restart=always

@@ -1,0 +1,14 @@
+###Sacado de https://www.linuxito.com/seguridad/464-como-permitir-que-un-usuari>
+
+##Configuracion global
+
+User_Alias USR_SISTEMAS_OPERATIVOS = sistemas_operativos
+
+##COMANDOS
+Cmnd_Alias CMD_USERADD = /usr/sbin/useradd
+Cmnd_Alias CMD_PASSWD = /usr/bin/passwd
+
+##REGLAS
+USR_SISTEMAS_OPERATIVOS ALL = NOPASSWD:CMD_USERADD
+USR_SISTEMAS_OPERATIVOS ALL = NOPASSWD:CMD_PASSWD
+
