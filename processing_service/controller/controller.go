@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Index(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Welcome! "})
-}
+// func Index(c *gin.Context) {
+// 	c.JSON(http.StatusOK, gin.H{"message": "Welcome! "})
+// }
 
 func Submit(c *gin.Context) {
 	model.Increment_value()
