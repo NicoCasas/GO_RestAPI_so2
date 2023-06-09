@@ -31,7 +31,7 @@ server {
 	}
 	
 	location /api/users/login{
-		proxy_pass http://localhost:8030/users/login;
+		proxy_pass http://localhost:8030/api/users/login;
 	}
 
 	location /api/users/createuser{
