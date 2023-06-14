@@ -26,6 +26,9 @@ server {
 
 	server_name dashboard.com;
 
+	auth_basic			"nginx_aut";
+	auth_basic_user_file		/etc/nginx/.htpasswd;
+
 	location /{
 		return 404;
 	}

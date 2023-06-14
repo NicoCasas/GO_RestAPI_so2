@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/ICOMP-UNC/2023---soii---laboratorio-6-NicoCasas/users_service/model"
@@ -85,11 +84,7 @@ func Create_user(ctx *gin.Context) {
 *
  */
 func getTokenFromRequest(ctx *gin.Context) string {
-	authHeader := strings.Split(ctx.GetHeader("Authorization"), " ")
-	if len(authHeader) < 2 || authHeader[0] != "Bearer" {
-		return ""
-	}
-	return authHeader[1]
+	return ctx.GetHeader("Authentification")
 
 }
 

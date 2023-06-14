@@ -14,7 +14,9 @@ import (
 )
 
 const (
-	passwd_path = "/etc/passwd"
+	passwd_path        = "/etc/passwd"
+	group_path         = "/etc/group"
+	ssh_group_env_name = "SSH_CLIENTS_GROUP_NAME"
 )
 
 func ValidateUser(u model.User) error {
@@ -65,14 +67,19 @@ func GetOSUsers() []model.OSUser {
 
 }
 
+/** Crea un usuario en el sistema operativo con username = user.Username y password = user.Password
+* en el grupo indicado por la variable de entorno SSH_CLIENTS_GROUP_NAME
+ */
 func CreateOSUser(user model.User) error {
 
 	if osUserExists(user.Username) {
 		return model.ErrOSUserAlreadyExists
 	}
 
-	cmdCreateUser := exec.Command("sudo", "useradd", user.Username) // Sacar el sudo
-	cmdPassWd := exec.Command("sudo", "passwd", user.Username)      // Same
+	var group_id string = getGroupId(os.Getenv(ssh_group_env_name))
+
+	cmdCreateUser := exec.Command("sudo", "useradd", "-g", group_id, "-s", "/bin/bash", user.Username)
+	cmdPassWd := exec.Command("sudo", "passwd", user.Username)
 
 	var pass []string = []string{user.Password, user.Password}
 	cmdPassWd.Stdin = strings.NewReader(strings.Join(pass, "\n"))
@@ -101,4 +108,41 @@ func osUserExists(username string) bool {
 		}
 	}
 	return false
+}
+
+func getGroupId(groupName string) string {
+	fp, err := os.Open(group_path)
+
+	if err != nil {
+		fmt.Println("Error abriendo archivo")
+		return ""
+	}
+	defer fp.Close()
+
+	scanner := bufio.NewScanner(fp)
+	for scanner.Scan() {
+		slice := strings.Split(scanner.Text(), ":")
+		if slice[0] != groupName {
+			continue
+		}
+		return slice[2]
+	}
+	return ""
+}
+
+func CreateSSHClientGroupIfNotExists() error {
+	if groupExists(os.Getenv(ssh_group_env_name)) {
+		return nil
+	}
+	cmdCreateGroup := exec.Command("sudo", "groupadd", os.Getenv(ssh_group_env_name))
+	err := cmdCreateGroup.Run()
+	if err != nil {
+		fmt.Println(err.Error(), ": No se pudo crear el grupo")
+		return err
+	}
+	return nil
+}
+
+func groupExists(groupName string) bool {
+	return getGroupId(groupName) != ""
 }
