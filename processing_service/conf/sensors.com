@@ -26,6 +26,9 @@ server {
 
 	server_name sensors.com;
 
+	auth_basic			"nginx auth";
+	auth_basic_user_file		/etc/nginx/.htpasswd;
+
 	location / {
 		return 404;
 	}
