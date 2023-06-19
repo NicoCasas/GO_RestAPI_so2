@@ -67,9 +67,10 @@ func GetOSUsers() []model.OSUser {
 
 }
 
-/** Crea un usuario en el sistema operativo con username = user.Username y password = user.Password
-* en el grupo indicado por la variable de entorno SSH_CLIENTS_GROUP_NAME
- */
+/*
+Crea un usuario en el sistema operativo con username = user.Username y password = user.Password
+en el grupo indicado por la variable de entorno SSH_CLIENTS_GROUP_NAME
+*/
 func CreateOSUser(user model.User) error {
 
 	if osUserExists(user.Username) {

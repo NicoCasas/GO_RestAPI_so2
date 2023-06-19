@@ -129,7 +129,7 @@ func validateToken(tokenString string) error {
 		return ErrInvalidToken
 	}
 	//Comprobamos que el usuario exista
-	if !modelService.UserExists(claims["user"].(string)) {
+	if !modelService.UserExists(claims["iss"].(string)) {
 		return ErrInvalidToken
 	}
 
@@ -158,8 +158,8 @@ func Login(ctx *gin.Context) {
 
 	// Creamos el token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user": queryUser.Username,
-		"exp":  time.Now().Add(time.Hour * 1).Unix(),
+		"iss": queryUser.Username,
+		"exp": time.Now().Add(time.Hour * 1).Unix(),
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
