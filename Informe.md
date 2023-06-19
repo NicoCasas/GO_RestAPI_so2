@@ -2,13 +2,13 @@
 
 ## Diseño de los endpoints
 
-Ambos endpoints siguen el patron de diseño de Controller - Service - Repository, al igual que el ejemplo presentado en clases[[1]](https://github.com/SOiI-UNC/go-example).
+Ambos endpoints siguen el patron de diseño de Controller - Service - Repository, al igual que el [ejemplo](https://github.com/SOiI-UNC/go-example) presentado en clases.
 
 ## Initializers
 El package initializers tiene funciones que se ejecutan en `init`, es decir, una vez antes de ejecutar el main.
 Estas:
-    - Cargan como variables de entorno aquellas encontradas en el archivo de configuración conf/.env, usando el package [godotenv](https://pkg.go.dev/github.com/joho/godotenv)
-    - Crear, en caso de no existir, el grupo en el que se van a encontrar los usuarios con permisos de conexión por ssh. 
+- Cargan como variables de entorno aquellas encontradas en el archivo de configuración conf/.env, usando el package [godotenv](https://pkg.go.dev/github.com/joho/godotenv)
+- Crear, en caso de no existir, el grupo en el que se van a encontrar los usuarios con permisos de conexión por ssh. 
 
 ## Servicios - Systemd
 Los servicios, tanto el de usuarios como el de procesamiento, son manejados por systemd. Para esto hay que crear, por servicio, un archivo en `/etc/systemd/system`. En el proyecto, se encuentran en `'service'/conf/'service'.service`.
