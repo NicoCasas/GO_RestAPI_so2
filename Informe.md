@@ -1,5 +1,22 @@
 # Informe Lab 6: Sistemas Embebidos / Webservices - Desarrollo
 
+## Script de instalación
+
+Para buildear los archivos y luego configurar los archivos necesarios para el funcionamiento de los servicios y nginx es necesario usar los siguientes comandos situado en la carpeta root del proyecto, donde se encuentra el Makefile:
+
+    make build
+    sudo make install
+
+Luego, iniciar nginx via:
+
+    sudo systemctl start nginx     #(si no estaba corriendo)
+    sudo nginx -s reload           #(si ya se estaba ejecutando)
+
+Finalmente, levantamos los servicios con:
+    
+    sudo systemctl start users_service.service
+    sudo systemctl start processing_service.service
+    
 ## Diseño de los endpoints
 
 Ambos endpoints siguen el patron de diseño de Controller - Service - Repository, al igual que el [ejemplo](https://github.com/SOiI-UNC/go-example) presentado en clases.
@@ -68,19 +85,63 @@ Este endpoint es bastante simple, consta de parcear el archivo `/etc/passwd`, ar
 ## Servicio de procesamiento
 
 Los endpoints de este servicio son bastante triviales:
+
     - /api/processing/submit    -> Incrementa un contador global
     - /api/processing/summary   -> Retorna el valor del contador
 
+## Ngnix
 
-## TODO temas a tocar en el informe:
-### Servicio (systemd)              .
-### Conexion base de datos sqlite   .
-### Autenticacion con JWT           .
-### Nginx 
-### Nginx - basic auth  
-### Sudoers                         .
-### Sshd                            .
-### Initializers                    .
-### Variables de entorno            .
-### Testing
-### Script de instalacion - uso
+Para exponer los servicios, se usa nginx como proxy inverso. Funciona como un especie de pasamanos, donde a partir de las sentencias:
+    
+    server_name sensors.com
+    
+    location /api/processing/submit {
+		proxy_pass http://localhost:8080/api/processing/submit;
+	}
+
+al ingresar a `sensors.com/api/processing/submit`, nginx redirecciona la request a `http://localhost:8080/api/processing/submit`.
+Los archivos de configuración de nginx se encuentran en el proyecto en la carpeta `'service'/conf/` y se deben ubicar en `/etc/nginx/sites-available`. Luego, poner un link simbólico en `/etc/nginx/sites-enabled` apuntando al archivo creado anteriormente. Esto podría omitirse poniendo el archivo directamente en el último path mencionado, pero se hace así por buena práctica, para activar o desactivar los sitios, simplemente creando o borrando los symlinks.
+
+### Autenticación básica
+Para el requerimiento de autenticación básica, es necesario:
+- Agregar dos líneas al archivo de configuración de nginx:
+
+      auth_basic                    "nginx auth";
+      auth_basic_user_file		/etc/nginx/.htpasswd;
+
+- Crear un archivo `htpasswd` con usuarios y contraseñas creados via `htpasswd -c /etc/nginx/.htpass 'user'` e ingresar la contraseña. El flag `-c` se usa solo para crear el primer usuario (porque crea el archivo).
+
+Luego, es posible acceder a los endpoints utilizando el flag `-u USER:SECRET` de curl, que a fines prácticos se traduce en `-u usuario:contraseña`
+
+### Modificando el /etc/hosts
+Si uno hiciese 'sensors.com/api/processing/submit', la request se redirigiría a la ip cuyo domain name coincida con sensors.com según el servidor de dns. Como en este caso, queremos acceder a la dirección de localhost, hay que modificar el archivo `/etc/hosts` agregando las lineas:
+
+    127.0.0.1	dashboard.com
+    127.0.0.1	sensors.com
+
+De esta forma, como siempre se comprueba este archivo antes de consultar al servidor de dns, ahora sí nos redirigirá al servidor de nginx. Ahora, si la dirección es la misma, ¿Por qué dashboard.com/api/processing/submit no lleva a sensors.com/api/processing/submit? Por los virtual hosts.
+
+Gracias a la línea: `server_name 'servicio'.com` es que nginx puede discriminar qué request corresponde a qué servicio.
+
+También se crea otro archivo de nginx con un default_server que redirecciona todo a 404 (en caso de no coincidir el nombre de dominio con el resto de virtual hosts, se matchea con este servidor).
+
+## Testing
+
+Tanto el folder de users_service como el de processing_service cuentan con una carpeta tests, donde hay algunos tests de bash.
+
+### Processing_service
+Funciona igual que el del tp5 y tiene el mismo nombre: `test_n_post_dos_get.sh`, solo que se realiza todo con curl, y se pasan las credenciales de autenticación básica:
+- Se hace un GET al /summary para saber el valor del contador al iniciar el test
+- Se realizan N1 POST al /submit
+- Se realiza un GET y se guarda en CONTADOR_1
+- Se realizan N2 POST
+- Se realiza un GET y se guarda en CONTADOR_2
+- Si (CONTADOR_1 - CONTADOR_BASE == N1_POST) y (CONTADOR_2 - CONTADOR_BASE) == (N1_POST+N2_POST) se imprime `TEST_PASSED`, si no `TEST_FAILED`
+
+### Users_service
+En este caso hay varios tests:
+- `test_login_fail.sh` : Hace un curl al endpoint de login con credenciales incorrectas. Se espera que no devuelva token.
+- `test_login_pass.sh` : Hace un curl al endpoint de login con credenciales correctas. Se espera que devuelva token.
+- `test_get_users.sh`  : Hace un login correcto y con el token hace un curl a listall. Se espera que la cantidad de usuarios retornados sea igual a la cantidad de usuarios encontrados en el archivo /etc/passwd
+- `test_create_user.sh`: Hace un login correcto y con el token hace un curl a createuser. Se espera encontrar el usuario en /etc/passwd.
+
