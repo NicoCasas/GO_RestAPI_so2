@@ -5,7 +5,7 @@
 Para buildear los archivos y luego configurar los archivos necesarios para el funcionamiento de los servicios y nginx es necesario usar los siguientes comandos situado en la carpeta root del proyecto, donde se encuentra el Makefile:
 
     make build
-    sudo make install
+    sudo -E make install	   # -E para preservar la variable de entorno PWD
 
 Luego, iniciar nginx via:
 
