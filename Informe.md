@@ -16,13 +16,13 @@ Para realizar las peticiones a los endpoints del sistema operativo es necesario 
                 --header 'content-type: application/json' \
                 --data '{"username": "nicoAdmin", "password": "nicoPass"}'
 
-Las credenciales de dicho usuario se encuentran en una base de datos sql. Para gestionarla, se usa sqlite3. Como bibliografía se usaron [[1]](https://github.com/SOiI-UNC/go-example) [[2]](https://zetcode.com/golang/sqlite3/).
+Las credenciales de dicho usuario se encuentran en una base de datos sql. La contraseña hasheada. Para gestionar la bdd, se usa sqlite3. Como bibliografía se usaron [[1]](https://github.com/SOiI-UNC/go-example) [[2]](https://zetcode.com/golang/sqlite3/).
 En el jwt, se incluyen dos campos en el payload:
   - iss: Nombre de usuario autenticado
   - exp: Indica el tiempo de expiración de la validez del token. En este caso, el token dura una hora.
 
 ### Endpoint de creación de usuario - POST /api/users/createuser
-Este endpoint tiene como finalidad crear un usuario en el sistema operativo para que luego pueda acceder al sistema via ssh.
+Este endpoint tiene como finalidad crear un usuario en el sistema operativo para que luego pueda acceder al sistema via ssh. Antes de realizar cuaquier acción, primero verifica la validez del token. En caso de no ser correcto, se retorna `401`
 
 #### Creación del usuario
 Para esta parte se usó el package [os/exec](https://pkg.go.dev/os/exec) siguiendo los ejemplos encontrados en [3](https://zetcode.com/golang/exec-command/). Estas funciones tienen comportamientos similares tipo fork/exec de c en el sentido de que no invocan una shell. 
@@ -35,17 +35,28 @@ En el caso del último comando, la contraseña se pasa 2 veces vía stdin. Es po
 
 #### Acceso via ssh
 Para este punto, se decidió crear un grupo `operativos_ssh_clients` cuyo group_id, (obtenido del `/etc/group`) es el pasado como argumento en el comando useradd del punto anterior.
-Luego, se le da acceso a todos los usuarios del mismo a través de la sentencia
+Luego, se le da acceso a todos los usuarios del mismo en el archivo de configuración `/etc/ssh/sshd_config` o en un archivo terminado en '*.conf*' en `/etc/ssh/sshd_config.d/` a través de la sentencia
 
     AllowGroups operativos_ssh_clients
+
+### Endpoint que lista usuarios - GET /api/users/listall
+Este endpoint es bastante simple, consta de parcear el archivo `/etc/passwd`, armar un slice y retornarlo en formato json. Antes de realizar cuaquier acción, primero verifica la validez del token. En caso de no ser correcto, se retorna `401`
+
+## Servicio de procesamiento
+
+Los endpoints de este servicio son bastante triviales:
+    - /api/processing/submit    -> Incrementa un contador global
+    - /api/processing/summary   -> Retorna el valor del contador
+
 
 
 ## TODO temas a tocar en el informe:
 ### Servicio (systemd)
-### Conexion base de datos sqlite
-### Autenticacion con JWT
-### Nginx - basic auth
-### Sudoers
-### Sshd
+### Conexion base de datos sqlite   .
+### Autenticacion con JWT           .
+### Nginx 
+### Nginx - basic auth  
+### Sudoers                         
+### Sshd                            .
 ### Initializers
 ### Variables de entorno
