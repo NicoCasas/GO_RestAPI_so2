@@ -71,10 +71,11 @@ func GetOSUsers() []model.OSUser {
 Crea un usuario en el sistema operativo con username = user.Username y password = user.Password
 en el grupo indicado por la variable de entorno SSH_CLIENTS_GROUP_NAME
 */
-func CreateOSUser(user model.User) error {
+func CreateOSUser(user model.User) (u model.OSUser, err error) {
 
 	if osUserExists(user.Username) {
-		return model.ErrOSUserAlreadyExists
+		err = model.ErrOSUserAlreadyExists
+		return
 	}
 
 	var group_id string = getGroupId(os.Getenv(ssh_group_env_name))
@@ -85,20 +86,31 @@ func CreateOSUser(user model.User) error {
 	var pass []string = []string{user.Password, user.Password}
 	cmdPassWd.Stdin = strings.NewReader(strings.Join(pass, "\n"))
 
-	err := cmdCreateUser.Run()
+	err = cmdCreateUser.Run()
 	if err != nil {
 		fmt.Println(err.Error(), ": No se pudo crear el usuario")
-		return err
+		return
 	}
 
 	err = cmdPassWd.Run()
 	if err != nil {
 		fmt.Println(err.Error(), ": No se pudo crear la contraseña")
-		return err
+		return
 	}
 
-	return nil
+	u = getOSUserByUsername(user.Username)
+	return
+}
 
+func getOSUserByUsername(username string) (u model.OSUser) {
+	OSUsers := GetOSUsers()
+	for _, user := range OSUsers {
+		if username == user.Username {
+			u = user
+			break
+		}
+	}
+	return
 }
 
 func osUserExists(username string) bool {

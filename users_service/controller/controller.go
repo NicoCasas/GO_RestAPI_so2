@@ -39,10 +39,6 @@ func ValidatedPing(ctx *gin.Context) {
 }
 
 func Create_user(ctx *gin.Context) {
-	var code int
-	var info string
-	var info_key string
-
 	stringToken := getTokenFromRequest(ctx)
 
 	if err := validateToken(stringToken); err != nil {
@@ -60,23 +56,24 @@ func Create_user(ctx *gin.Context) {
 		return
 	}
 
-	err := modelService.CreateOSUser(user)
+	OSUser, err := modelService.CreateOSUser(user)
 	switch err {
 	case nil:
-		code = http.StatusOK
-		info = "Usuario creado exitosamente"
-		info_key = "message"
-	case model.ErrOSUserAlreadyExists:
-		code = http.StatusBadRequest
-		info_key = "error"
-		info = model.ErrOSUserAlreadyExists.Error()
-	default:
-		code = http.StatusBadRequest
-		info_key = "error"
-		info = "No se pudo completar la solicitud"
-	}
+		ctx.JSON(http.StatusOK, gin.H{
+			"id":         OSUser.UserID,
+			"username":   OSUser.Username,
+			"created_at": time.Now().Format("2006-01-02 15:04:05"),
+		})
 
-	ctx.JSON(code, gin.H{info_key: info})
+	case model.ErrOSUserAlreadyExists:
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": model.ErrOSUserAlreadyExists.Error()},
+		)
+	default:
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "No se pudo completar la solicitud"},
+		)
+	}
 
 }
 

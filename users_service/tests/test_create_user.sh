@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Imrime TEST_PASSED si logra crear el usuario en el sistema operativo a través de los endpoints login
+# Imprime TEST_PASSED si logra crear el usuario en el sistema operativo a través de los endpoints login
 # (para obtener el jwt) y createuser
 
 # Flag para determinar si borrar el usuario creado al terminar el test
@@ -31,7 +31,7 @@ RESULTADO=$(curl -s --request POST \
 
 
 
-echo ${RESULTADO} | grep >/dev/null "Usuario creado exitosamente" && (cat /etc/passwd | grep >/dev/null newUser) && echo TEST_PASSED || echo TEST_FAILED
+echo ${RESULTADO} | grep >/dev/null "username" && (cat /etc/passwd | grep >/dev/null newUser) && echo TEST_PASSED || echo TEST_FAILED
 
 # Lo eliminamos
 [[ DEL_USER_FLAG == 1 ]] && sudo deluser >/dev/null 2>&1 newUser 
